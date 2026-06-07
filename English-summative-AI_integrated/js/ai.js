@@ -26,9 +26,7 @@ const AIClaimant = (() => {
     return 'http://127.0.0.1:11434';
   }
 
-  // AI interview is the DEFAULT experience; it auto-falls back to the scripted
-  // question menu whenever no AI server is reachable, so the game never breaks.
-  const cfg = { enabled: true, host: defaultHost(), model: 'llama3.2:3b', key: '' };
+  const cfg = { enabled: false, host: defaultHost(), model: 'llama3.2:3b', key: '' };
   try { Object.assign(cfg, JSON.parse(localStorage.getItem(LS_KEY) || '{}')); } catch (e) { /* ignore */ }
 
   // One-click connect: a launcher can hand out a link like
@@ -158,10 +156,6 @@ const AIClaimant = (() => {
     const content = data && data.message ? (data.message.content || '') : '';
     return stripThink(content) || (canon || '…');
   }
-
-  // On load, if AI is on, quietly check reachability so the status line is
-  // accurate (green/red) without the player having to press Connect.
-  if (cfg.enabled) { setTimeout(ping, 300); }
 
   return { isOn, isReachable, getCfg, setModel, setHost, setKey, setEnabled, connect, ping, ask };
 })();
