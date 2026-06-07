@@ -1,9 +1,9 @@
-# game-ai-remote.ps1 — play from ANYWHERE (laptop on a different network).
+# game-ai-remote.ps1 - play from ANYWHERE (laptop on a different network).
 #
 # Runs three things on this desktop and prints ONE link to open on the laptop:
-#   1. Ollama (kept on localhost — never exposed directly).
-#   2. game-ai-proxy.py — a keyed gateway in front of Ollama (adds CORS + a key).
-#   3. a Cloudflare tunnel — gives the proxy a public https URL, reachable anywhere.
+#   1. Ollama (kept on localhost - never exposed directly).
+#   2. game-ai-proxy.py - a keyed gateway in front of Ollama (adds CORS + a key).
+#   3. a Cloudflare tunnel - gives the proxy a public https URL, reachable anywhere.
 #
 # The printed link is the github.io game with the address + key baked in, so the
 # laptop connects with one click. https end-to-end (no mixed-content), keyed
@@ -78,7 +78,7 @@ if ($pub) {
     $enc  = [uri]::EscapeDataString($pub)
     $link = "$GamePages?aihost=$enc&aikey=$key"
     Write-Host "============================================================" -ForegroundColor Green
-    Write-Host "  OPEN THIS ON THE LAPTOP (any network) — auto-connects:" -ForegroundColor Green
+    Write-Host "  OPEN THIS ON THE LAPTOP (any network) - auto-connects:" -ForegroundColor Green
     Write-Host "    $link" -ForegroundColor White
     Write-Host ""
     Write-Host "  Or connect manually on the start screen:" -ForegroundColor Green
@@ -86,8 +86,8 @@ if ($pub) {
     Write-Host "    Key:     $key" -ForegroundColor White
     Write-Host "============================================================" -ForegroundColor Green
     Write-Host "  Keep this window + the proxy/Ollama windows open while playing." -ForegroundColor DarkGray
-    Write-Host "  Note: the free tunnel URL changes each run — re-share the link." -ForegroundColor DarkGray
+    Write-Host "  Note: the free tunnel URL changes each run - re-share the link." -ForegroundColor DarkGray
 } else {
     Write-Host "[remote] Couldn't read the tunnel URL yet. Check $out / $log," -ForegroundColor Yellow
-    Write-Host "         then use the https://….trycloudflare.com line with key $key." -ForegroundColor Yellow
+    Write-Host "         then use the https://<id>.trycloudflare.com line with key $key." -ForegroundColor Yellow
 }

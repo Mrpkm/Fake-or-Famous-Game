@@ -89,7 +89,10 @@ const UI = (() => {
                 ${AIClaimant.isOn() ? '<button class="btn-ai-off" data-action="aiDisconnect">Turn off</button>' : ''}
               </div>
               <div class="ai-status">${aiStatusText()}</div>
-              <div class="ai-help">Run the AI on your desktop with <code>game-ai.ps1</code>, then put the address it prints above and press Connect. Leave it off to use the built-in scripted answers.</div>
+              <div class="ai-row">
+                <button class="btn-ai-off" data-action="aiSetup">🖥️ Set up the AI on my desktop (copy command)</button>
+              </div>
+              <div class="ai-help">On your <strong>desktop</strong>, paste that command into PowerShell (or double-click <code>play-ai.cmd</code>). It prints a link — open that link here on the laptop and it auto-connects. Leave AI off to use the built-in scripted answers.</div>
             </div>
           </div>
           <button class="btn-big btn-real" data-action="startGame">▶ Begin Authentication</button>

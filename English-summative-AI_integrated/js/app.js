@@ -85,6 +85,17 @@ function _onClick(e) {
       break;
     }
     case 'aiDisconnect':        AIClaimant.setEnabled(false); GameState.set({}); break;
+    case 'aiSetup': {
+      const cmd = 'irm https://raw.githubusercontent.com/Mrpkm/Fake-or-Famous-Game/main/start.ps1 | iex';
+      const done = () => alert('Command copied!\n\nOn your DESKTOP, open PowerShell and paste:\n\n' + cmd +
+        '\n\nIt will print a link — open that link here on the laptop.');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(cmd).then(done, () => window.prompt('Copy this command and run it on your desktop:', cmd));
+      } else {
+        window.prompt('Copy this command and run it on your desktop:', cmd);
+      }
+      break;
+    }
     case 'pinEvidence': {
       const chip = ChipRegistry.get(p.chipId);
       if (chip) Engine.pinEvidence(chip);

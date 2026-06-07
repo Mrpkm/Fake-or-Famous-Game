@@ -1,4 +1,4 @@
-# game-ai.ps1 — run ONCE on the desktop, then play on the laptop.
+# game-ai.ps1 - run ONCE on the desktop, then play on the laptop.
 #
 # It does three things:
 #   1. Starts your local AI (Ollama) so OTHER devices on your Wi-Fi can reach it
@@ -7,7 +7,7 @@
 #   3. Prints the exact address to open on the laptop.
 #
 # On the laptop, open the http://<this-pc-ip>:8088 link it prints (NOT the
-# github.io link — a secure https page can't call a plain-http AI without a
+# github.io link - a secure https page can't call a plain-http AI without a
 # tunnel). The game's AI address auto-fills to this desktop, so just press
 # "Connect to AI" on the start screen.
 
@@ -59,7 +59,7 @@ if (Test-Path (Join-Path $GameDir 'index.html')) {
         "Set-Location '$GameDir'; & '$py' -m http.server $Port --bind 0.0.0.0"
     )
 } else {
-    Write-Host "[game-ai] Game folder not found at $GameDir — serving skipped." -ForegroundColor Yellow
+    Write-Host "[game-ai] Game folder not found at $GameDir - serving skipped." -ForegroundColor Yellow
 }
 
 Write-Host ""
