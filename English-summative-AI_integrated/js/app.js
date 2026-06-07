@@ -68,6 +68,13 @@ function _onClick(e) {
     case 'startInvestigation':  Engine.startInvestigation();                 break;
     case 'dossierTab':          Engine.setActiveDossierCard(p.card);        break;
     case 'askQuestion':         Engine.askQuestion(p.questionId);           break;
+    case 'askFree': {
+      const el = document.getElementById('ai-free-input');
+      const t = el ? el.value : '';
+      if (el) el.value = '';
+      Engine.askFreeText(t);
+      break;
+    }
     case 'pinEvidence': {
       const chip = ChipRegistry.get(p.chipId);
       if (chip) Engine.pinEvidence(chip);
@@ -90,12 +97,23 @@ function _onClick(e) {
   }
 }
 
+// ── Keyboard: Enter sends the free-text AI question ───────────────────────
+function _onKeydown(e) {
+  if (e.key === 'Enter' && e.target && e.target.id === 'ai-free-input') {
+    e.preventDefault();
+    const t = e.target.value;
+    e.target.value = '';
+    Engine.askFreeText(t);
+  }
+}
+
 // ── Init ─────────────────────────────────────────────────────────────────
 function _initApp() {
   const root = document.getElementById('game-root');
   if (!root) return;
 
   root.addEventListener('click',     _onClick);
+  root.addEventListener('keydown',   _onKeydown);
   root.addEventListener('dragstart', _onDragStart);
   root.addEventListener('dragend',   _onDragEnd);
   root.addEventListener('dragover',  _onDragOver);

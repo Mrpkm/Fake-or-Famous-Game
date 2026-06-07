@@ -41,6 +41,13 @@ const UI = (() => {
     </div>`;
   }
 
+  function aiStatusText() {
+    const r = AIClaimant.isReachable();
+    if (r === true)  return '🟢 Connected — the claimant will answer live.';
+    if (r === false) return "🔴 Can't reach the AI. Scripted answers will be used. Start Ollama and allow this site (set OLLAMA_ORIGINS).";
+    return '⚪ Will check when you turn it on.';
+  }
+
   // ── Phase: Start screen ───────────────────────────────────────────────────
 
   function renderStart() {
@@ -68,6 +75,17 @@ const UI = (() => {
               <input type="checkbox" id="practice-check" ${CONFIG.practiceMode ? 'checked' : ''}
                 onchange="CONFIG.practiceMode = this.checked"> No timers (Practice Mode)
             </label>
+            <label class="practice-toggle">
+              <input type="checkbox" id="ai-check" ${AIClaimant.isOn() ? 'checked' : ''}
+                onchange="AIClaimant.setEnabled(this.checked); GameState.set({});">
+              🤖 Live AI interview <span class="ai-sub">(local Qwen / Ollama — type your own questions)</span>
+            </label>
+            <div class="ai-settings" ${AIClaimant.isOn() ? '' : 'style="display:none"'}>
+              <input type="text" id="ai-host" value="${esc(AIClaimant.getCfg().host)}"
+                placeholder="http://127.0.0.1:11434"
+                onchange="AIClaimant.setHost(this.value); AIClaimant.ping();" />
+              <div class="ai-status">${aiStatusText()}</div>
+            </div>
           </div>
           <button class="btn-big btn-real" data-action="startGame">▶ Begin Authentication</button>
         </div>
@@ -141,7 +159,13 @@ const UI = (() => {
 
     // Speech bubble for last answer
     let bubbleHtml = `<div class="pp-speech-bubble"><span class="pp-bubble-empty">Ask a question to begin the interview.</span></div>`;
-    if (lastAnswer) {
+    if (lastAnswer && lastAnswer.pending) {
+      bubbleHtml = `
+        <div class="pp-speech-bubble">
+          <div class="pp-bubble-q">Q: ${esc(lastAnswer.text)}</div>
+          <div class="pp-bubble-a pp-typing">…the claimant is thinking…</div>
+        </div>`;
+    } else if (lastAnswer) {
       const cid = registerAnswerChip(currentArtist, lastAnswer);
       const inTray = evidenceTray.find(c => c.id === cid);
       bubbleHtml = `
@@ -188,6 +212,18 @@ const UI = (() => {
         ${asked ? '✓ ' : ''}${esc(q.text)}
       </button>`;
     }).join('');
+
+    // Free-text AI question box (AI mode only)
+    const aiOffline = AIClaimant.isReachable() === false;
+    const aiAskHtml = AIClaimant.isOn() ? `
+      <div class="pp-ai-ask">
+        <input id="ai-free-input" class="pp-ai-input" type="text" autocomplete="off"
+               placeholder="Type your own question for the claimant…" ${questionsLeft <= 0 ? 'disabled' : ''} />
+        <button class="pp-ai-send" data-action="askFree" ${questionsLeft <= 0 ? 'disabled' : ''}>Ask ▶</button>
+      </div>
+      <div class="pp-ai-note">🤖 Live AI claimant — a typed question costs 1 ask.${
+        aiOffline ? ' <span class="pp-ai-warn">AI offline — scripted answers in use.</span>' : ''}</div>
+    ` : '';
 
     // Evidence tray chips
     const trayHtml = evidenceTray.length === 0
@@ -267,6 +303,7 @@ const UI = (() => {
               <div class="pp-questions-panel">
                 <div class="pp-panel-hdr">INTERVIEW — ${questionsLeft} question${questionsLeft !== 1 ? 's' : ''} remaining</div>
                 <div class="pp-q-list">${questionsHtml}</div>
+                ${aiAskHtml}
               </div>
 
               <div class="pp-evidence-tray-panel">
@@ -722,6 +759,7 @@ const UI = (() => {
     // Preserve textarea values across re-renders to avoid losing user typing.
     const explainVal = document.getElementById('peel-explain')?.value ?? '';
     const linkVal    = document.getElementById('peel-link')?.value ?? '';
+    const aiInputVal = document.getElementById('ai-free-input')?.value ?? '';
 
     let html = '';
     switch (state.phase) {
@@ -743,6 +781,8 @@ const UI = (() => {
     const linkEl    = document.getElementById('peel-link');
     if (explainEl && explainVal) explainEl.value = explainVal;
     if (linkEl    && linkVal)    linkEl.value    = linkVal;
+    const aiEl = document.getElementById('ai-free-input');
+    if (aiEl && aiInputVal) aiEl.value = aiInputVal;
   }
 
   return { render };

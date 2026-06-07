@@ -110,7 +110,26 @@ const Engine = (() => {
     GameState.set({ activeDossierCard: cardKey });
   }
 
-  function askQuestion(questionId) {
+  // Append a new interview turn and spend one question from the budget.
+  function _appendAnswer(item) {
+    const s = GameState.get();
+    const asked = [...s.askedQuestions, item];
+    GameState.set({
+      questionsLeft: s.questionsLeft - 1,
+      askedQuestions: asked,
+      lastAnswerIdx: asked.length - 1,
+    });
+  }
+
+  // Replace a pending turn's answer once the model (or fallback) returns.
+  function _resolveAnswer(questionId, answer) {
+    const s = GameState.get();
+    const asked = s.askedQuestions.map(q =>
+      q.questionId === questionId ? { ...q, answer, pending: false } : q);
+    GameState.set({ askedQuestions: asked });
+  }
+
+  async function askQuestion(questionId) {
     const s = GameState.get();
     if (s.questionsLeft <= 0) return;
     if (s.askedQuestions.find(q => q.questionId === questionId)) return;
@@ -121,18 +140,47 @@ const Engine = (() => {
     const isTell = s.currentRole === 'fraud'
       && s.currentArtist.fraudTells.some(t => t.questionId === questionId);
 
-    let answer = q.trueAnswer;
+    // The scripted (canonical) answer — also the fallback if the AI is unreachable.
+    let canon = q.trueAnswer;
     if (s.currentRole === 'fraud') {
       const tell = s.currentArtist.fraudTells.find(t => t.questionId === questionId);
-      if (tell) answer = tell.fraudAnswer;
+      if (tell) canon = tell.fraudAnswer;
     }
 
-    const asked = [...s.askedQuestions, { questionId, text: q.text, answer, value: q.value, isTell }];
-    GameState.set({
-      questionsLeft: s.questionsLeft - 1,
-      askedQuestions: asked,
-      lastAnswerIdx: asked.length - 1,
-    });
+    if (typeof AIClaimant !== 'undefined' && AIClaimant.isOn()) {
+      // Spend the question now, show a "thinking" turn, then fill in the live reply.
+      _appendAnswer({ questionId, text: q.text, answer: '…', value: q.value, isTell, pending: true });
+      let answer;
+      try {
+        answer = await AIClaimant.ask({
+          artist: s.currentArtist, role: s.currentRole, question: q.text, canon });
+      } catch (e) {
+        answer = canon;   // graceful fallback to the scripted answer
+      }
+      _resolveAnswer(questionId, answer);
+      return;
+    }
+
+    _appendAnswer({ questionId, text: q.text, answer: canon, value: q.value, isTell });
+  }
+
+  // Free-text question (AI mode only): the player types their own question.
+  // value 'free' so it doesn't skew the high/low question-efficiency metric.
+  async function askFreeText(text) {
+    const s = GameState.get();
+    text = (text || '').trim();
+    if (!text || s.questionsLeft <= 0) return;
+    if (typeof AIClaimant === 'undefined' || !AIClaimant.isOn()) return;
+
+    const questionId = 'free_' + Date.now();
+    _appendAnswer({ questionId, text, answer: '…', value: 'free', isTell: false, pending: true });
+    let answer;
+    try {
+      answer = await AIClaimant.ask({ artist: s.currentArtist, role: s.currentRole, question: text });
+    } catch (e) {
+      answer = "(The claimant didn't respond — is the local AI running? Scripted answers still work.)";
+    }
+    _resolveAnswer(questionId, answer);
   }
 
   function pinEvidence(chip) {
@@ -219,9 +267,11 @@ const Engine = (() => {
     if (peelComplete) score += CONFIG.scoring.peelComplete;
     breakdown.peelComplete = peelComplete;
 
-    // 4. Question efficiency
-    const highCount = askedQuestions.filter(q => q.value === 'high').length;
-    const efficient = askedQuestions.length > 0 && (highCount / askedQuestions.length) >= 0.6;
+    // 4. Question efficiency — only the scripted high/low menu questions count
+    // toward the ratio (free-text AI questions are exploratory, not graded here).
+    const scored    = askedQuestions.filter(q => q.value === 'high' || q.value === 'low');
+    const highCount = scored.filter(q => q.value === 'high').length;
+    const efficient = scored.length > 0 && (highCount / scored.length) >= 0.6;
     if (efficient) score += CONFIG.scoring.questionEfficiency;
     breakdown.efficiency = efficient;
     breakdown.highCount  = highCount;
@@ -284,7 +334,7 @@ const Engine = (() => {
   return {
     startGame, startInvestigation, moveToBuild, proceedToVerdict,
     setActiveDossierCard,
-    askQuestion, pinEvidence, removeEvidence,
+    askQuestion, askFreeText, pinEvidence, removeEvidence,
     setPeelPoint, addEvidenceToPeel, removeEvidenceFromPeel,
     submitVerdict, nextCase, startRound2,
     togglePracticeMode, stopTimer,
