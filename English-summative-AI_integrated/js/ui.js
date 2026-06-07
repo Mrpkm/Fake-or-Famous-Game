@@ -80,7 +80,11 @@ const UI = (() => {
                 <span class="ai-sub">— local Qwen / Ollama, type your own questions</span></div>
               <div class="ai-row">
                 <input type="text" id="ai-host" value="${esc(AIClaimant.getCfg().host)}"
-                       placeholder="http://desktop-ip:11434" autocomplete="off" />
+                       placeholder="address (LAN: http://desktop-ip:11434 · remote: https://….trycloudflare.com)" autocomplete="off" />
+              </div>
+              <div class="ai-row">
+                <input type="text" id="ai-key" value="${esc(AIClaimant.getCfg().key)}"
+                       placeholder="access key (only for remote / proxy)" autocomplete="off" />
                 <button class="btn-ai-connect" data-action="aiConnect">${AIClaimant.isOn() ? '🔄 Reconnect' : '🤖 Connect to AI'}</button>
                 ${AIClaimant.isOn() ? '<button class="btn-ai-off" data-action="aiDisconnect">Turn off</button>' : ''}
               </div>

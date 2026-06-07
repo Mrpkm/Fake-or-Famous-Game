@@ -1,0 +1,3 @@
+# local AI secrets / binaries — never commit these
+.game-ai-key
+cloudflared.exe

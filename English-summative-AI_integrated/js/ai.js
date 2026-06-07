@@ -26,8 +26,20 @@ const AIClaimant = (() => {
     return 'http://127.0.0.1:11434';
   }
 
-  const cfg = { enabled: false, host: defaultHost(), model: 'qwen3:4b' };
+  const cfg = { enabled: false, host: defaultHost(), model: 'qwen3:4b', key: '' };
   try { Object.assign(cfg, JSON.parse(localStorage.getItem(LS_KEY) || '{}')); } catch (e) { /* ignore */ }
+
+  // One-click connect: a launcher can hand out a link like
+  //   …/Fake-or-Famous-Game/?aihost=https://x.trycloudflare.com&aikey=SECRET
+  // which pre-fills + enables AI so the laptop connects with zero typing.
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get('aihost')) {
+      cfg.host = q.get('aihost').replace(/\/+$/, '');
+      if (q.get('aikey')) cfg.key = q.get('aikey');
+      cfg.enabled = true;
+    }
+  } catch (e) { /* ignore */ }
 
   let reachable = null;   // null = unknown, true/false after a ping
 
@@ -43,7 +55,9 @@ const AIClaimant = (() => {
   function isReachable() { return reachable; }
   function getCfg()      { return Object.assign({}, cfg); }
   function setModel(m)   { cfg.model = (m || '').trim() || 'qwen3:4b'; save(); }
+  function setKey(k)     { cfg.key = (k || '').trim(); save(); }
   function setHost(h)    { cfg.host = normHost(h); reachable = null; save(); }
+  function authHeaders(base) { return cfg.key ? Object.assign({}, base, { 'X-Game-Key': cfg.key }) : Object.assign({}, base); }
   function setEnabled(v) { cfg.enabled = !!v; save(); if (v) ping(); }
 
   // Connect button: ping the current host and enable AI mode only if it answers.
@@ -58,7 +72,7 @@ const AIClaimant = (() => {
   // Quick reachability probe (also refreshes the UI status line).
   async function ping() {
     try {
-      const r = await fetch(cfg.host + '/api/tags', { method: 'GET' });
+      const r = await fetch(cfg.host + '/api/tags', { method: 'GET', headers: authHeaders({}) });
       reachable = r.ok;
     } catch (e) {
       reachable = false;
@@ -127,7 +141,7 @@ const AIClaimant = (() => {
     let r;
     try {
       r = await fetch(cfg.host + '/api/chat', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(body),
       });
     } catch (e) {
       reachable = false;
@@ -137,7 +151,7 @@ const AIClaimant = (() => {
       // Some models/builds reject `think:false` — retry once without it.
       delete body.think;
       r = await fetch(cfg.host + '/api/chat', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(body),
       });
     }
     if (!r.ok) throw new Error('http ' + r.status);
@@ -148,5 +162,5 @@ const AIClaimant = (() => {
     return stripThink(content) || (canon || '…');
   }
 
-  return { isOn, isReachable, getCfg, setModel, setHost, setEnabled, connect, ping, ask };
+  return { isOn, isReachable, getCfg, setModel, setHost, setKey, setEnabled, connect, ping, ask };
 })();

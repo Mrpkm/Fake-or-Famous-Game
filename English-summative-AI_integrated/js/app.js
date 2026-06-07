@@ -76,8 +76,10 @@ function _onClick(e) {
       break;
     }
     case 'aiConnect': {
-      const el = document.getElementById('ai-host');
-      if (el) AIClaimant.setHost(el.value);
+      const el  = document.getElementById('ai-host');
+      const kEl = document.getElementById('ai-key');
+      if (el)  AIClaimant.setHost(el.value);
+      if (kEl) AIClaimant.setKey(kEl.value);
       GameState.set({});       // reflect the host immediately
       AIClaimant.connect();    // async ping + enable; re-renders when done
       break;
