@@ -876,3 +876,17 @@ body {
 .pp-typing::after { content: ''; animation: pp-dots 1.2s steps(4, end) infinite; }
 @keyframes pp-dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; }
   75% { content: '...'; } 100% { content: ''; } }
+
+/* ── AI connect panel (start screen) ──────────────────────────────────── */
+.ai-panel { margin-top: 10px; padding: 12px 14px; border: 1px dashed #b9a98c;
+  border-radius: 8px; background: rgba(255,255,255,0.5); text-align: left; }
+.ai-panel-title { font-weight: 700; margin-bottom: 8px; }
+.ai-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.ai-row input { flex: 1; min-width: 160px; font: inherit; padding: 8px 10px;
+  border: 1px solid #b9a98c; border-radius: 6px; background: #fffef8; color: #2a2118; }
+.btn-ai-connect { font: inherit; font-weight: 700; padding: 8px 14px; border: none;
+  border-radius: 6px; background: #4a7c3f; color: #fff; cursor: pointer; }
+.btn-ai-off { font: inherit; padding: 8px 12px; border: 1px solid #b9a98c;
+  border-radius: 6px; background: #ece4d4; color: #5a4a32; cursor: pointer; }
+.ai-help { margin-top: 8px; font-size: 11.5px; opacity: 0.8; line-height: 1.45; }
+.ai-help code { background: #2a2118; color: #ffd86b; padding: 1px 5px; border-radius: 4px; font-size: 11px; }

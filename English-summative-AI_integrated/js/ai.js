@@ -11,7 +11,22 @@
 // never breaking character.
 const AIClaimant = (() => {
   const LS_KEY = 'faf_ai_cfg';
-  const cfg = { enabled: false, host: 'http://127.0.0.1:11434', model: 'qwen3:4b' };
+
+  // Smart default: if the game is served over http from a desktop on the LAN
+  // (not github.io, not localhost), assume the AI is on that same desktop —
+  // so playing on a laptop "just works" with no IP typing.
+  function defaultHost() {
+    try {
+      const h = location.hostname;
+      if (location.protocol === 'http:' && h && h !== 'localhost'
+          && h !== '127.0.0.1' && !/github\.io$/i.test(h)) {
+        return 'http://' + h + ':11434';
+      }
+    } catch (e) { /* ignore */ }
+    return 'http://127.0.0.1:11434';
+  }
+
+  const cfg = { enabled: false, host: defaultHost(), model: 'qwen3:4b' };
   try { Object.assign(cfg, JSON.parse(localStorage.getItem(LS_KEY) || '{}')); } catch (e) { /* ignore */ }
 
   let reachable = null;   // null = unknown, true/false after a ping
@@ -30,6 +45,15 @@ const AIClaimant = (() => {
   function setModel(m)   { cfg.model = (m || '').trim() || 'qwen3:4b'; save(); }
   function setHost(h)    { cfg.host = normHost(h); reachable = null; save(); }
   function setEnabled(v) { cfg.enabled = !!v; save(); if (v) ping(); }
+
+  // Connect button: ping the current host and enable AI mode only if it answers.
+  async function connect() {
+    const ok = await ping();
+    cfg.enabled = ok;
+    save();
+    try { GameState.set({}); } catch (e) { /* ignore */ }
+    return ok;
+  }
 
   // Quick reachability probe (also refreshes the UI status line).
   async function ping() {
@@ -124,5 +148,5 @@ const AIClaimant = (() => {
     return stripThink(content) || (canon || '…');
   }
 
-  return { isOn, isReachable, getCfg, setModel, setHost, setEnabled, ping, ask };
+  return { isOn, isReachable, getCfg, setModel, setHost, setEnabled, connect, ping, ask };
 })();

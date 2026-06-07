@@ -75,6 +75,14 @@ function _onClick(e) {
       Engine.askFreeText(t);
       break;
     }
+    case 'aiConnect': {
+      const el = document.getElementById('ai-host');
+      if (el) AIClaimant.setHost(el.value);
+      GameState.set({});       // reflect the host immediately
+      AIClaimant.connect();    // async ping + enable; re-renders when done
+      break;
+    }
+    case 'aiDisconnect':        AIClaimant.setEnabled(false); GameState.set({}); break;
     case 'pinEvidence': {
       const chip = ChipRegistry.get(p.chipId);
       if (chip) Engine.pinEvidence(chip);

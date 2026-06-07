@@ -75,16 +75,17 @@ const UI = (() => {
               <input type="checkbox" id="practice-check" ${CONFIG.practiceMode ? 'checked' : ''}
                 onchange="CONFIG.practiceMode = this.checked"> No timers (Practice Mode)
             </label>
-            <label class="practice-toggle">
-              <input type="checkbox" id="ai-check" ${AIClaimant.isOn() ? 'checked' : ''}
-                onchange="AIClaimant.setEnabled(this.checked); GameState.set({});">
-              🤖 Live AI interview <span class="ai-sub">(local Qwen / Ollama — type your own questions)</span>
-            </label>
-            <div class="ai-settings" ${AIClaimant.isOn() ? '' : 'style="display:none"'}>
-              <input type="text" id="ai-host" value="${esc(AIClaimant.getCfg().host)}"
-                placeholder="http://127.0.0.1:11434"
-                onchange="AIClaimant.setHost(this.value); AIClaimant.ping();" />
+            <div class="ai-panel">
+              <div class="ai-panel-title">🤖 AI Interview
+                <span class="ai-sub">— local Qwen / Ollama, type your own questions</span></div>
+              <div class="ai-row">
+                <input type="text" id="ai-host" value="${esc(AIClaimant.getCfg().host)}"
+                       placeholder="http://desktop-ip:11434" autocomplete="off" />
+                <button class="btn-ai-connect" data-action="aiConnect">${AIClaimant.isOn() ? '🔄 Reconnect' : '🤖 Connect to AI'}</button>
+                ${AIClaimant.isOn() ? '<button class="btn-ai-off" data-action="aiDisconnect">Turn off</button>' : ''}
+              </div>
               <div class="ai-status">${aiStatusText()}</div>
+              <div class="ai-help">Run the AI on your desktop with <code>game-ai.ps1</code>, then put the address it prints above and press Connect. Leave it off to use the built-in scripted answers.</div>
             </div>
           </div>
           <button class="btn-big btn-real" data-action="startGame">▶ Begin Authentication</button>
