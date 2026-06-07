@@ -898,12 +898,3 @@ body {
 .ai-help { margin-top: 8px; font-size: 0.7rem; color: var(--ink-lt); line-height: 1.5; }
 .ai-help code { background: var(--ink); color: var(--gold-lt); padding: 1px 5px;
   font-family: 'Courier New', monospace; font-size: 0.68rem; }
-
-/* AI live banner + suggested-questions label inside the interview panel */
-.pp-ai-banner { margin: 6px 8px; padding: 5px 8px; font-family: 'Courier New', monospace;
-  font-size: 0.64rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em;
-  text-align: center; border: 1px solid; }
-.pp-ai-banner.live { color: #bfe8bf; background: rgba(26,78,26,0.5); border-color: var(--green); }
-.pp-ai-banner.off  { color: #e8c0c0; background: rgba(122,26,26,0.4); border-color: var(--red); }
-.pp-q-sublabel { margin: 8px 8px 2px; font-size: 0.6rem; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--ink-lt); }

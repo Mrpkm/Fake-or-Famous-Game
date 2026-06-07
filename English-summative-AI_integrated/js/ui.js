@@ -221,20 +221,17 @@ const UI = (() => {
       </button>`;
     }).join('');
 
-    // AI interview is the default: a clear live banner + a free-text "ask anything" box.
-    const aiOn   = AIClaimant.isOn();
-    const aiLive = aiOn && AIClaimant.isReachable() !== false;   // optimistic until proven down
-    const aiBanner = aiOn
-      ? `<div class="pp-ai-banner ${aiLive ? 'live' : 'off'}">${aiLive
-          ? '\u{1F7E2} AI CLAIMANT IS LIVE - ask anything below'
-          : '\u{1F534} AI not connected - using scripted answers (connect on the Home screen)'}</div>`
-      : '';
-    const aiAskHtml = aiOn ? `
+    // Free-text AI question box (AI mode only)
+    const aiOffline = AIClaimant.isReachable() === false;
+    const aiAskHtml = AIClaimant.isOn() ? `
       <div class="pp-ai-ask">
         <input id="ai-free-input" class="pp-ai-input" type="text" autocomplete="off"
-               placeholder="Type your own question for the claimant..." ${questionsLeft <= 0 ? 'disabled' : ''} />
-        <button class="pp-ai-send" data-action="askFree" ${questionsLeft <= 0 ? 'disabled' : ''}>Ask</button>
-      </div>` : '';
+               placeholder="Type your own question for the claimant…" ${questionsLeft <= 0 ? 'disabled' : ''} />
+        <button class="pp-ai-send" data-action="askFree" ${questionsLeft <= 0 ? 'disabled' : ''}>Ask ▶</button>
+      </div>
+      <div class="pp-ai-note">🤖 Live AI claimant — a typed question costs 1 ask.${
+        aiOffline ? ' <span class="pp-ai-warn">AI offline — scripted answers in use.</span>' : ''}</div>
+    ` : '';
 
     // Evidence tray chips
     const trayHtml = evidenceTray.length === 0
@@ -313,10 +310,8 @@ const UI = (() => {
 
               <div class="pp-questions-panel">
                 <div class="pp-panel-hdr">INTERVIEW — ${questionsLeft} question${questionsLeft !== 1 ? 's' : ''} remaining</div>
-                ${aiBanner}
-                ${aiAskHtml}
-                ${aiOn ? '<div class="pp-q-sublabel">Suggested questions (also answered live)</div>' : ''}
                 <div class="pp-q-list">${questionsHtml}</div>
+                ${aiAskHtml}
               </div>
 
               <div class="pp-evidence-tray-panel">
