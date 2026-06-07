@@ -13,7 +13,7 @@ $Raw       = 'https://raw.githubusercontent.com/Mrpkm/Fake-or-Famous-Game/main'
 $GamePages = 'https://mrpkm.github.io/Fake-or-Famous-Game/'
 $Root      = Join-Path $env:USERPROFILE 'Fake-or-Famous-Game'
 $ProxyPort = 11500
-$Model     = 'qwen3:4b'
+$Model     = 'llama3.2:3b'
 New-Item -ItemType Directory -Force -Path $Root | Out-Null
 
 function Test-Http($url) {

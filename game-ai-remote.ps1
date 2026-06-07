@@ -12,7 +12,7 @@
 $ErrorActionPreference = 'Stop'
 $Root      = $PSScriptRoot
 $ProxyPort = 11500
-$Model     = 'qwen3:4b'
+$Model     = 'llama3.2:3b'
 $GamePages = 'https://mrpkm.github.io/Fake-or-Famous-Game/'
 
 # --- access key (generated once, kept out of git) ----------------------------

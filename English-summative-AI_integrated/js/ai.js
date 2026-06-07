@@ -26,7 +26,7 @@ const AIClaimant = (() => {
     return 'http://127.0.0.1:11434';
   }
 
-  const cfg = { enabled: false, host: defaultHost(), model: 'qwen3:4b', key: '' };
+  const cfg = { enabled: false, host: defaultHost(), model: 'llama3.2:3b', key: '' };
   try { Object.assign(cfg, JSON.parse(localStorage.getItem(LS_KEY) || '{}')); } catch (e) { /* ignore */ }
 
   // One-click connect: a launcher can hand out a link like
@@ -133,9 +133,11 @@ const AIClaimant = (() => {
           ? `${question}\n\n(Answer using this information, in your own words and fully in character: "${canon}")`
           : question },
     ];
+    // A small, non-reasoning instruct model (default llama3.2:3b) answers directly
+    // and fast on CPU — qwen3 would dump long hidden reasoning and be too slow.
     const body = {
-      model: cfg.model, stream: false, think: false, messages,
-      options: { temperature: 0.7, num_predict: 160 },
+      model: cfg.model, stream: false, messages,
+      options: { temperature: 0.7, num_predict: 200 },
     };
 
     let r;
@@ -146,13 +148,6 @@ const AIClaimant = (() => {
     } catch (e) {
       reachable = false;
       throw new Error('unreachable');
-    }
-    if (!r.ok) {
-      // Some models/builds reject `think:false` — retry once without it.
-      delete body.think;
-      r = await fetch(cfg.host + '/api/chat', {
-        method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(body),
-      });
     }
     if (!r.ok) throw new Error('http ' + r.status);
 

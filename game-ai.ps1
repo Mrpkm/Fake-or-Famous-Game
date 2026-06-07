@@ -15,7 +15,7 @@ $ErrorActionPreference = 'Stop'
 $Root    = $PSScriptRoot
 $GameDir = Join-Path $Root 'English-summative-AI_integrated'
 $Port    = 8088
-$Model   = 'qwen3:4b'
+$Model   = 'llama3.2:3b'
 
 # --- find ollama -------------------------------------------------------------
 $ollama = (Get-Command ollama -ErrorAction SilentlyContinue).Source
